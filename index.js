@@ -35,8 +35,29 @@ async function run() {
     })
 
     app.get('/cars', async(req, res)=>{
-        const result = await carsCollection.find().toArray()
+
+      try{
+        const {search, type} = req.query;
+        let query = {};
+
+        if(search){
+          query.carName = {
+            $regex: search,
+            $options:'i'
+          }
+        }
+
+        if(type && type !== "All"){
+          query.carType = type;
+        }
+
+        const result = await carsCollection.find(query).toArray()
         res.json(result)
+      }catch (error){
+        console.error('Error details:', error)
+        res.status(500).json({message:"Internal Server Error"})
+      }
+
     })
 
     app.get('/cars/:id', async(req, res)=>{
