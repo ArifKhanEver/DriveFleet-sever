@@ -60,13 +60,13 @@ async function run() {
     const carsCollection = db.collection("cars");
     const bookingCollection = db.collection("carBookings");
 
-    app.post("/cars", verifyJWT, async (req, res) => {
+    app.post("/cars", async (req, res) => {
       const carsData = req.body;
       const result = await carsCollection.insertOne(carsData);
       res.json(result);
     });
 
-    app.get("/cars", async (req, res) => {
+    app.get("/cars",verifyJWT, async (req, res) => {
       try {
         const { search, type, userEmail } = req.query;
         let query = {};
@@ -178,7 +178,7 @@ async function run() {
       res.json(result);
     });
 
-    // await client.db("DriveFleet").command({ ping: 1 });
+    await client.db("DriveFleet").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
     );
