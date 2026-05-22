@@ -60,13 +60,13 @@ async function run() {
     const carsCollection = db.collection("cars");
     const bookingCollection = db.collection("carBookings");
 
-    app.post("/cars", async (req, res) => {
+    app.post("/cars", verifyJWT, async (req, res) => {
       const carsData = req.body;
       const result = await carsCollection.insertOne(carsData);
       res.json(result);
     });
 
-    app.get("/cars",verifyJWT, async (req, res) => {
+    app.get("/cars", async (req, res) => {
       try {
         const { search, type, userEmail } = req.query;
         let query = {};
@@ -100,7 +100,7 @@ async function run() {
       res.json(result);
     });
 
-    app.patch("/cars/:id", async (req, res) => {
+    app.patch("/cars/:id" ,verifyJWT, async (req, res) => {
       try {
         const { id } = req.params;
         const updatedData = req.body;
@@ -170,7 +170,7 @@ async function run() {
       }
     });
 
-    app.delete("/bookings/:id", async (req, res) => {
+    app.delete("/bookings/:id" , verifyJWT, async (req, res) => {
       const { id } = req.params;
       const result = await bookingCollection.deleteOne({
         _id: new ObjectId(id),
