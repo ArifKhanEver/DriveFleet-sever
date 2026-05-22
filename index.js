@@ -54,13 +54,13 @@ async function verifyJWT(req, res, next) {
 
 async function run() {
   try {
-    // await client.connect();
+    await client.connect();
 
     const db = client.db("DriveFleet");
     const carsCollection = db.collection("cars");
     const bookingCollection = db.collection("carBookings");
 
-    app.post("/cars", async (req, res) => {
+    app.post("/cars", verifyJWT, async (req, res) => {
       const carsData = req.body;
       const result = await carsCollection.insertOne(carsData);
       res.json(result);
@@ -159,7 +159,7 @@ async function run() {
       });
     });
 
-    app.get("/bookings", async (req, res) => {
+    app.get("/bookings", verifyJWT, async (req, res) => {
       try {
         const { userEmail } = req.query;
         const result = await bookingCollection.find({ userEmail }).toArray();
