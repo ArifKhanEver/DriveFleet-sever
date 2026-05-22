@@ -21,13 +21,13 @@ const client = new MongoClient(uri, {
   },
 });
 
-const JWKS = createRemoteJWKSet(
-  new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
-
-);
+const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
 
 async function verifyJWT(req, res, next) {
   const authHeader = req?.headers?.authorization;
+
+  // console.log(JWKS)
+  console.log(authHeader)
 
 
   if (!authHeader) {
@@ -134,7 +134,7 @@ async function run() {
     });
 
     // Bookings here
-    app.post("/bookings", async (req, res) => {
+    app.post("/bookings", verifyJWT, async (req, res) => {
       const bookingData = req.body;
       const carId = bookingData.carId
 
