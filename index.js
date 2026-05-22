@@ -22,8 +22,8 @@ const client = new MongoClient(uri, {
 });
 
 const JWKS = createRemoteJWKSet(
-  new URL(process.env.CLIENT_URL + "/api/auth/jwks"),
-  
+  new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
+
 );
 
 async function verifyJWT(req, res, next) {
@@ -38,13 +38,14 @@ async function verifyJWT(req, res, next) {
   if (!token) {
     return res.status(401).json({ message: "Unauthorized: Missing Token" });
   }
+  console.log('token is', token)
 
   try {
     const { payload } = await jwtVerify(token, JWKS);
-    // req.user = payload;
+    req.user = payload;
     next();
   } catch (error) {
-    // console.error("JWT Verification Error:", error);
+    console.error("JWT Verification Error:", error);
     return res
       .status(403)
       .json({ message: "Forbidden: Invalid Token", detail: error.message });
@@ -135,8 +136,27 @@ async function run() {
     // Bookings here
     app.post("/bookings", async (req, res) => {
       const bookingData = req.body;
-      const result = await bookingCollection.insertOne(bookingData);
-      res.json(result);
+      const carId = bookingData.carId
+
+      if (!carId) {
+        return res.status(400).json({ success: false, message: "Missing carId in request body!" })
+      }
+      const bookingResult = await bookingCollection.insertOne(bookingData);
+
+      const filter = { _id: new ObjectId(carId) };
+
+      const updateDoc = {
+        $inc: { booking_count: 1 }
+      }
+
+      const carUpdatedResult = await carsCollection.updateOne(filter, updateDoc)
+      console.log("Car Updated DB Result:", carUpdatedResult)
+
+      res.status(201).json({
+        success: true,
+        message: "Booking successful and car count incremented!",
+        bookingResult
+      });
     });
 
     app.get("/bookings", async (req, res) => {
